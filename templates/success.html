@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submission Successful</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <div class="success-message">
+            <div class="success-icon">✓</div>
+            <h1>Thank You!</h1>
+            <p>Your application has been successfully submitted.</p>
+            <p class="message-detail">We have received your assessment form and will review your application shortly. You will be contacted via email regarding the next steps.</p>
+            <div class="success-actions">
+                <a href="{{ url_for('index') }}" class="btn btn-primary">Submit Another Application</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
