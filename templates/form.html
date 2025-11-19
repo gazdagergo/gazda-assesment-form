@@ -5,10 +5,33 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Assessment Form</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-    <div class="container" x-data="{ currentStep: 1, totalSteps: 2 }">
+    <div class="container" x-data="{
+        currentStep: 1,
+        totalSteps: 2,
+        formData: $persist({
+            name: '',
+            email: '',
+            phone: '',
+            position: '',
+            experience: '',
+            skills: ''
+        }).as('jobApplicationDraft'),
+        clearDraft() {
+            this.formData = {
+                name: '',
+                email: '',
+                phone: '',
+                position: '',
+                experience: '',
+                skills: ''
+            };
+            this.currentStep = 1;
+        }
+    }">
         <h1>Job Assessment Form</h1>
         <p class="subtitle">Please fill out the form below to apply for the position</p>
 
@@ -49,6 +72,7 @@
                         required
                         minlength="2"
                         placeholder="Enter your full name"
+                        x-model="formData.name"
                     >
                 </div>
 
@@ -60,6 +84,7 @@
                         name="email"
                         required
                         placeholder="your.email@example.com"
+                        x-model="formData.email"
                     >
                 </div>
 
@@ -70,6 +95,7 @@
                         id="phone"
                         name="phone"
                         placeholder="+36 XX XXX XXXX"
+                        x-model="formData.phone"
                     >
                 </div>
             </div>
@@ -80,7 +106,7 @@
 
                 <div class="form-group">
                     <label for="position">Position Applied For <span class="required">*</span></label>
-                    <select id="position" name="position" required>
+                    <select id="position" name="position" required x-model="formData.position">
                         <option value="">-- Select Position --</option>
                         <option value="frontend-developer">Frontend Developer</option>
                         <option value="backend-developer">Backend Developer</option>
@@ -94,7 +120,7 @@
 
                 <div class="form-group">
                     <label for="experience">Years of Experience <span class="required">*</span></label>
-                    <select id="experience" name="experience" required>
+                    <select id="experience" name="experience" required x-model="formData.experience">
                         <option value="">-- Select Experience --</option>
                         <option value="0-1">0-1 years</option>
                         <option value="1-3">1-3 years</option>
@@ -111,6 +137,7 @@
                         name="skills"
                         rows="5"
                         placeholder="List your key skills, technologies, and areas of expertise..."
+                        x-model="formData.skills"
                     ></textarea>
                 </div>
             </div>
@@ -140,7 +167,7 @@
                         x-show="currentStep === totalSteps"
                         x-transition
                     >Submit Application</button>
-                    <button type="reset" class="btn btn-secondary">Clear Form</button>
+                    <button type="button" class="btn btn-secondary" @click="clearDraft()">Clear Form</button>
                 </div>
             </div>
         </form>
