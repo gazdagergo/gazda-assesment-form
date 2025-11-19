@@ -2,7 +2,11 @@
 
 ## Project Overview
 
-This project demonstrates an **AI-aided form templating approach** using a declarative XML schema to define forms, which are then implemented as Flask/Alpine.js web applications. The initial POC is a job assessment form; the current work-in-progress is an NHS National Conversation application form.
+This project demonstrates an **AI-aided form templating approach** using a declarative XML schema to define forms, which are then implemented as Flask/Alpine.js web applications.
+
+**Current forms:**
+- **Job Assessment Form** (POC) - 2-step form for job applications
+- **NHS National Conversation Form** - 4-step registration form for national event
 
 ## Technology Stack
 
@@ -10,64 +14,7 @@ This project demonstrates an **AI-aided form templating approach** using a decla
 - **Frontend**: HTML5, CSS3, Alpine.js 3.x with Persist plugin
 - **Storage**: JSON file-based storage (server), localStorage (client drafts)
 - **Template Engine**: Jinja2 (built into Flask)
-- **Form Definition**: Custom XML DSL (form-template.xml)
-
-## AI-Aided Templating Approach
-
-The project uses a **declarative XML-based DSL** where:
-1. `form-template.xml` defines the form structure, fields, validation, and behavior
-2. The XML acts as a structured prompt for AI to generate working implementations
-3. Implementation follows the patterns established in the POC
-
-### XML Schema Elements
-
-```xml
-<!-- Root Element -->
-<Form title="..." subtitle="..." action="/submit" method="POST" novalidate="true">
-
-<!-- State Management (persistence) -->
-<State persist="true" storageKey="draftKeyName">
-  <Field name="fieldName" default="" />
-</State>
-
-<!-- Pagination -->
-<Pagination totalSteps="N">
-  <ProgressIndicator logic="..." />
-</Pagination>
-
-<!-- Form Sections -->
-<FormSection step="1" title="Section Title">
-  <!-- fields -->
-</FormSection>
-
-<!-- Field Types -->
-<FormField name="..." label="..." type="text|email|tel" required="true" model="formData.field" />
-<SelectField name="..." label="..." required="true" model="formData.field">
-  <Option value="..." label="..." />
-</SelectField>
-<TextareaField name="..." label="..." rows="4" required="true" model="formData.field" />
-<CheckboxField name="..." label="..." required="true" model="formData.field" />
-
-<!-- Navigation -->
-<Navigation>
-  <PreviousButton label="..." />
-  <NextButton label="..." />
-  <SubmitButton label="..." />
-  <ClearButton label="..." />
-</Navigation>
-
-<!-- Messages & Success -->
-<Messages source="flask flash messages" />
-<OnSuccess redirect="/success" />
-```
-
-### Common Field Attributes
-- `name` - Form submission field name
-- `label` - Display label
-- `model` - Alpine.js x-model binding (e.g., `formData.fieldName`)
-- `required` - Validation requirement
-- `placeholder` - Input placeholder text
-- `logic` - Documentation of the field's behavior
+- **Form Definition**: Custom XML DSL in `prompt-templates/`
 
 ## Project Structure
 
@@ -77,20 +24,178 @@ gazda-assesment-form/
 │   ├── project-info.md              # This file - project documentation
 │   └── prompts/
 │       └── analysis-of-old-form/    # NHS form analysis
-│           └── National conversation on the future of the NHS.html
-├── app.py                           # Flask application
-├── form-template.xml                # XML form definition (POC)
+│           ├── National conversation on the future of the NHS.html
+│           └── nhs-form-ux-analysis.md
+├── prompt-templates/                # XML form definitions (AI prompts)
+│   ├── form-template.xml            # Job assessment form schema
+│   └── form-template-nhs.xml        # NHS conversation form schema
+├── app.py                           # Flask app - Job assessment form
+├── app_nhs.py                       # Flask app - NHS conversation form
 ├── requirements.txt                 # Python dependencies
 ├── README.md                        # Setup instructions
 ├── data/
-│   └── submissions.json             # Form submissions storage
+│   ├── submissions.json             # Job form submissions
+│   └── nhs_submissions.json         # NHS form submissions
 ├── templates/
-│   ├── form.html                    # Main form (Alpine.js)
-│   └── success.html                 # Success confirmation
+│   ├── form.html                    # Job assessment form (Alpine.js)
+│   ├── form_nhs.html                # NHS conversation form (Alpine.js)
+│   ├── success.html                 # Job form success page
+│   └── success_nhs.html             # NHS form success page
 └── static/
     └── css/
-        └── style.css                # Application styles
+        └── style.css                # Shared application styles
 ```
+
+---
+
+## AI-Aided Templating Approach
+
+### What are Prompt Templates?
+
+The `prompt-templates/` directory contains **declarative XML files** that serve a dual purpose:
+
+1. **Structured Documentation** - Human-readable specification of form structure, fields, validation rules, and UX behavior
+2. **AI Prompts** - Machine-interpretable blueprints that Claude can use to generate or modify working implementations
+
+This approach separates the "what" (XML schema) from the "how" (Flask/Alpine.js code), making it easier to:
+- Design forms at a high level without implementation details
+- Generate consistent implementations from templates
+- Modify forms by updating the XML and regenerating code
+- Maintain documentation that stays in sync with implementation
+
+### How It Works
+
+1. **Define** - Create an XML template describing form structure, fields, validation, and behavior
+2. **Prompt** - Use the XML as context when asking Claude to implement or modify the form
+3. **Generate** - Claude produces Flask routes, HTML templates, and Alpine.js code following the schema
+4. **Iterate** - Update XML and regenerate to make changes
+
+### XML Schema Reference
+
+#### Root Element
+```xml
+<Form title="..." subtitle="..." action="/submit" method="POST" novalidate="true">
+```
+
+#### State Management
+Defines fields persisted to localStorage via Alpine.js `$persist`:
+```xml
+<State persist="true" storageKey="draftKeyName">
+  <Field name="fieldName" default="" />
+  <Field name="checkboxField" default="false" />
+</State>
+```
+
+#### Pagination
+```xml
+<Pagination totalSteps="N">
+  <ProgressIndicator logic="Description of progress display behavior" />
+</Pagination>
+```
+
+#### Form Sections
+```xml
+<FormSection step="1" title="Section Title">
+  <!-- fields go here -->
+</FormSection>
+```
+
+#### Field Types
+
+**Text Input:**
+```xml
+<FormField
+    name="fieldName"
+    label="Display Label"
+    type="text|email|tel"
+    required="true"
+    minlength="2"
+    placeholder="Placeholder text"
+    model="formData.fieldName"
+    logic="Description of field behavior" />
+```
+
+**Select Dropdown:**
+```xml
+<SelectField
+    name="fieldName"
+    label="Display Label"
+    required="true"
+    model="formData.fieldName"
+    defaultOption="Please select...">
+    <Option value="1">Option Label</Option>
+</SelectField>
+```
+
+**Textarea:**
+```xml
+<TextareaField
+    name="fieldName"
+    label="Display Label"
+    rows="5"
+    required="false"
+    model="formData.fieldName" />
+```
+
+**Checkbox:**
+```xml
+<CheckboxField
+    name="fieldName"
+    label="Checkbox label text"
+    required="true"
+    model="formData.fieldName"
+    helpText="Additional explanation" />
+```
+
+**Field Group (for related fields like DOB):**
+```xml
+<FieldGroup label="Group Label">
+  <!-- Multiple fields displayed together -->
+</FieldGroup>
+```
+
+#### Content Elements
+```xml
+<IntroText>
+  <Paragraph>Text content</Paragraph>
+  <List>
+    <Item>List item</Item>
+  </List>
+</IntroText>
+
+<SectionIntro>Helper text for the section</SectionIntro>
+<DataSharingNotice>Legal notice about data</DataSharingNotice>
+```
+
+#### Navigation
+```xml
+<Navigation>
+  <PreviousButton label="Previous" />
+  <NextButton label="Next" styling="primary coloring" />
+  <SubmitButton label="Submit" styling="primary coloring" />
+  <ClearButton label="Clear Form" />
+</Navigation>
+```
+
+#### Success Behavior
+```xml
+<OnSuccess redirect="/success" logic="Clear localStorage on success page load" />
+```
+
+### Common Attributes
+
+| Attribute | Purpose |
+|-----------|---------|
+| `name` | Form field name for submission |
+| `label` | Display label |
+| `model` | Alpine.js x-model binding (e.g., `formData.fieldName`) |
+| `required` | Validation requirement (true/false) |
+| `placeholder` | Input placeholder text |
+| `logic` | Documentation of behavior (not rendered) |
+| `helpText` | Additional guidance shown to user |
+| `helpContent` | Tooltip/collapsible content |
+
+---
 
 ## Implementation Patterns
 
@@ -99,117 +204,95 @@ gazda-assesment-form/
 ```javascript
 x-data="{
   currentStep: 1,
-  totalSteps: 2,
+  totalSteps: 4,
   formData: $persist({
     field1: '',
-    field2: ''
+    field2: '',
+    checkbox1: false
   }).as('storageKey'),
   clearDraft() {
-    this.formData = { field1: '', field2: '' };
+    this.formData = { field1: '', field2: '', checkbox1: false };
     this.currentStep = 1;
-  }
+  },
+  stepNames: ['Step 1', 'Step 2', 'Step 3', 'Step 4']
 }"
 ```
 
 ### Multi-Step Pagination
 
-- Controlled via `currentStep` state variable
-- Sections use `x-show="currentStep === N"` with transitions
-- Navigation buttons conditionally rendered based on step
+- Controlled via `currentStep` state variable (1-indexed)
+- Each section wrapped in `<div x-show="currentStep === N" x-transition>`
+- Navigation buttons conditionally rendered based on step:
+  - Previous: `x-show="currentStep > 1"`
+  - Next: `x-show="currentStep < totalSteps"`
+  - Submit: `x-show="currentStep === totalSteps"`
 
 ### Progress Bar
 
 - Visual indicator with percentage width: `(currentStep / totalSteps * 100)%`
 - Step labels with dynamic bold styling for current step
 - CSS transition for smooth animation
+- Text display: "Step X of N"
 
 ### Persistence
 
-- **Client-side**: Alpine.js `$persist()` saves to localStorage automatically
-- **Server-side**: Flask saves submissions to JSON file
+- **Client-side**: Alpine.js `$persist()` auto-saves to localStorage on every change
+- **Server-side**: Flask saves submissions to JSON file with ID and timestamp
 - **On success**: localStorage cleared via `localStorage.removeItem('_x_storageKey')`
 
 ### Validation
 
-- **Client-side**: HTML5 attributes (required, minlength, type)
-- **Server-side**: Flask validation in `/submit` route
-- **Errors**: Flask flash messages displayed in form
-
-## Flask Routes
-
-| Route | Method | Purpose |
-|-------|--------|---------|
-| `/` | GET | Display form |
-| `/submit` | POST | Process submission |
-| `/success` | GET | Show confirmation |
-
-## Current POC: Job Assessment Form
-
-### Fields
-- Full Name (required, min 2 chars)
-- Email Address (required)
-- Phone Number (optional)
-- Position Applied For (select, required)
-- Years of Experience (select, required)
-- Key Skills (textarea, optional)
-
-### Steps
-1. Personal Information (name, email, phone)
-2. Professional Details (position, experience, skills)
+- **Client-side**: HTML5 attributes (required, minlength, type, maxlength)
+- **Server-side**: Flask validation in `/submit` route with comprehensive checks
+- **Errors**: Flask flash messages displayed at top of form
 
 ---
 
-## Work in Progress: NHS National Conversation Form
+## Form Implementations
 
-### Source Form Analysis
+### Job Assessment Form (POC)
 
-The original NHS form (`.claude/prompts/analysis-of-old-form/`) has these UX issues:
-- Single long page - overwhelming
-- Dense intro text with buried important info
-- No progress indicator
-- No draft persistence
-- Complex date of birth input (3 separate fields)
-- Long education definitions cluttering the form
+**Files:**
+- `app.py` - Flask backend (port 5000)
+- `templates/form.html` - Form template
+- `templates/success.html` - Success page
+- `prompt-templates/form-template.xml` - Schema
 
-### Proposed UX Improvements
+**Steps:**
+1. Personal Information (name, email, phone)
+2. Professional Details (position, experience, skills)
 
-Break into **4 logical steps** with pagination, progress bar, and persistence:
+**Storage:** `data/submissions.json`
 
-| Step | Section | Fields |
-|------|---------|--------|
-| 1 | Welcome & Eligibility | Event info, attendance confirmation, eligibility checkboxes |
-| 2 | Contact Details | First/last name, email, phone, address (line 1, line 2, city, postcode) |
-| 3 | About You | Gender, DOB, ethnicity, disability status, NHS satisfaction, education level |
-| 4 | Consent & Submit | Data consent checkbox, future contact opt-in, submit button |
+**Run:** `python app.py` → http://localhost:5000
 
-### Additional Improvements
-- Move education definitions to collapsible/tooltip
-- Cleaner DOB input grouping
-- Helpful hints and placeholders
-- Section context in progress indicator
+---
 
-### Form Fields (from original)
+### NHS National Conversation Form
 
-**Eligibility (checkboxes)**
-- Can attend all dates
-- Is eligible (age 16+, UK resident, received invitation, not excluded roles)
+**Files:**
+- `app_nhs.py` - Flask backend (port 5001)
+- `templates/form_nhs.html` - Form template
+- `templates/success_nhs.html` - Success page
+- `prompt-templates/form-template-nhs.xml` - Schema
 
-**Contact Details**
-- First Name, Last Name
-- Email, Phone
-- Address Line 1, Address Line 2, City, Post Code
+**Steps:**
+1. **Welcome & Eligibility** - Event info, attendance/eligibility confirmations
+2. **Contact Details** - Name, email, phone, full address
+3. **About You** - Demographics for lottery selection (gender, DOB, ethnicity, disability, NHS satisfaction, education)
+4. **Consent & Submit** - Data consent, future contact opt-in
 
-**Demographics**
-- Gender (Female, Male, Non-binary/Other)
-- Date of Birth (Day, Month, Year)
-- Ethnic group (7 options)
-- Disability status (3 options)
-- NHS satisfaction (5-point scale)
-- Highest educational qualification (6 levels with definitions)
+**Storage:** `data/nhs_submissions.json`
 
-**Consent**
-- Data use consent (required)
-- Stay on database for future events (optional)
+**Run:** `python app_nhs.py` → http://localhost:5001
+
+**Features:**
+- 20 form fields with full validation
+- localStorage persistence with `nhsConversationDraft` key
+- Progress indicator with step names
+- Education level tooltip
+- Data sharing notice with Thinks link
+- Withdrawal notice with contact email
 
 ---
 
@@ -223,28 +306,36 @@ source venv/bin/activate  # macOS/Linux
 # Install dependencies
 pip install -r requirements.txt
 
-# Run application
+# Run Job Assessment Form (POC)
 python app.py
+
+# Run NHS Conversation Form
+python app_nhs.py
 ```
 
 ## Configuration
 
-### Secret Key
-Location: `app.py`
+### Secret Keys
+Each app has its own secret key in the app file:
 ```python
-app.secret_key = 'your-secret-key-change-this-in-production'
+app.secret_key = 'change-this-in-production'
 ```
 
+### Ports
+- Job Assessment Form: 5000
+- NHS Conversation Form: 5001
+
 ### Debug Mode
-Set `debug=False` for production in `app.py`.
+Set `debug=False` for production in both app files.
 
 ## Security Considerations
 
-- Change `app.secret_key` in production
+- Change `app.secret_key` values in production
 - Set `debug=False` in production
 - Add CSRF protection for production use
 - Validate and sanitize all user inputs
-- Consider rate limiting for production
+- Consider adding rate limiting
+- Review data retention policies for GDPR compliance
 
 ## Dependencies
 
@@ -255,7 +346,8 @@ Set `debug=False` for production in `app.py`.
 
 ## Notes
 
-- This is a POC demonstrating AI-aided form templating
-- XML templates serve as structured prompts for implementation
-- All client data persists in localStorage until submission
-- Server data persists in `data/submissions.json`
+- XML templates in `prompt-templates/` serve as both documentation and AI prompts
+- All client data persists in localStorage until successful submission
+- Server data persists in `data/*.json` files
+- Forms share CSS styles but have independent Flask apps
+- Each form can run simultaneously on different ports
