@@ -4,14 +4,54 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>National conversation on the future of the NHS</title>
+    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/SF-favicon-new.ico') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <style>
+        /* Typography */
+        body {
+            font-family: 'Open Sans', sans-serif;
+        }
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Merriweather', serif;
+            color: #571845;
+        }
+
+        /* Top logo */
+        .top-logo {
+            text-align: left;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .top-logo img {
+            height: 80px;
+            width: auto;
+        }
+
+        /* Logo row */
+        .logo-row {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+            gap: 2rem;
+            margin: 1.5rem 0;
+            flex-wrap: wrap;
+            margin-bottom: 36px;
+        }
+        .logo-row img {
+            height: 60px;
+            width: auto;
+            object-fit: contain;
+            filter: grayscale(100%);
+        }
+
         /* NHS form specific styles */
         .intro-text {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.1);;
             border-radius: 8px;
             margin-bottom: 1.5rem;
         }
@@ -62,7 +102,6 @@
         }
         .field-group-label {
             display: block;
-            margin-bottom: 0.75rem;
             font-weight: 500;
         }
         .field-group-fields {
@@ -74,14 +113,13 @@
             margin-bottom: 0;
         }
         .data-notice {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(122, 122, 122, 0.1);
             padding: 1rem;
             border-radius: 8px;
             margin-bottom: 1.5rem;
             font-size: 0.9rem;
         }
         .data-notice a {
-            color: #fff;
             text-decoration: underline;
         }
         .withdrawal-notice {
@@ -104,18 +142,25 @@
     </style>
 </head>
 <body>
+    <!-- Sortition Foundation Logo -->
+    <div class="top-logo">
+        <img src="{{ url_for('static', filename='images/logosortition.svg') }}" alt="Sortition Foundation">
+    </div>
+
     <div class="container">
         <h1>National conversation on the future of the NHS</h1>
         <p class="subtitle">Register your interest in participating</p>
 
         <!-- Flash Messages -->
-        {% with messages = get_flashed_messages(with_categories=true) %}
-            {% if messages %}
-                {% for category, message in messages %}
-                    <div class="alert alert-{{ category }}">{{ message }}</div>
-                {% endfor %}
-            {% endif %}
-        {% endwith %}
+        <div class="alert-group">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }}">{{ message }}</div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+        </div>
 
         <form
             method="POST"
@@ -190,6 +235,12 @@
             <div x-show="currentStep === 1" x-transition>
                 <div class="intro-text">
                     <p>Thank you for your interest in taking part in a <strong>national conversation on the future of the NHS</strong>.</p>
+
+                    <!-- Partner Logos -->
+                    <div class="logo-row">
+                        <img src="{{ url_for('static', filename='images/DHSC_3268_AW-removebg-preview.png') }}" alt="DHSC">
+                        <img src="{{ url_for('static', filename='images/NHS-logo.png') }}" alt="NHS" style="height: 36px">
+                    </div>
 
                     <div class="note blue">
                         <p><strong>Highlights:</strong></p>
