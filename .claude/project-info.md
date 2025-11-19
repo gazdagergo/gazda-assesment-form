@@ -1,151 +1,224 @@
-# Job Assessment Form - Project Information
+# Form Assessment System - Project Information
 
 ## Project Overview
 
-This is a Flask-based web application designed for job assessment forms. It uses a simple text file (JSON) as a database, making it lightweight and easy to deploy without external database dependencies.
+This project demonstrates an **AI-aided form templating approach** using a declarative XML schema to define forms, which are then implemented as Flask/Alpine.js web applications. The initial POC is a job assessment form; the current work-in-progress is an NHS National Conversation application form.
 
 ## Technology Stack
 
 - **Backend**: Python 3.x with Flask 3.0.0
-- **Frontend**: HTML5, CSS3 (no JavaScript framework)
-- **Storage**: JSON file-based storage
+- **Frontend**: HTML5, CSS3, Alpine.js 3.x with Persist plugin
+- **Storage**: JSON file-based storage (server), localStorage (client drafts)
 - **Template Engine**: Jinja2 (built into Flask)
+- **Form Definition**: Custom XML DSL (form-template.xml)
+
+## AI-Aided Templating Approach
+
+The project uses a **declarative XML-based DSL** where:
+1. `form-template.xml` defines the form structure, fields, validation, and behavior
+2. The XML acts as a structured prompt for AI to generate working implementations
+3. Implementation follows the patterns established in the POC
+
+### XML Schema Elements
+
+```xml
+<!-- Root Element -->
+<Form title="..." subtitle="..." action="/submit" method="POST" novalidate="true">
+
+<!-- State Management (persistence) -->
+<State persist="true" storageKey="draftKeyName">
+  <Field name="fieldName" default="" />
+</State>
+
+<!-- Pagination -->
+<Pagination totalSteps="N">
+  <ProgressIndicator logic="..." />
+</Pagination>
+
+<!-- Form Sections -->
+<FormSection step="1" title="Section Title">
+  <!-- fields -->
+</FormSection>
+
+<!-- Field Types -->
+<FormField name="..." label="..." type="text|email|tel" required="true" model="formData.field" />
+<SelectField name="..." label="..." required="true" model="formData.field">
+  <Option value="..." label="..." />
+</SelectField>
+<TextareaField name="..." label="..." rows="4" required="true" model="formData.field" />
+<CheckboxField name="..." label="..." required="true" model="formData.field" />
+
+<!-- Navigation -->
+<Navigation>
+  <PreviousButton label="..." />
+  <NextButton label="..." />
+  <SubmitButton label="..." />
+  <ClearButton label="..." />
+</Navigation>
+
+<!-- Messages & Success -->
+<Messages source="flask flash messages" />
+<OnSuccess redirect="/success" />
+```
+
+### Common Field Attributes
+- `name` - Form submission field name
+- `label` - Display label
+- `model` - Alpine.js x-model binding (e.g., `formData.fieldName`)
+- `required` - Validation requirement
+- `placeholder` - Input placeholder text
+- `logic` - Documentation of the field's behavior
 
 ## Project Structure
 
 ```
 gazda-assesment-form/
 ├── .claude/
-│   ├── project-info.md          # This file - project documentation
-│   └── prompts/                 # Conversation history with Claude
-├── app.py                       # Main Flask application
-├── requirements.txt             # Python dependencies
-├── README.md                   # Setup and usage instructions
-├── .gitignore                  # Git ignore rules
+│   ├── project-info.md              # This file - project documentation
+│   └── prompts/
+│       └── analysis-of-old-form/    # NHS form analysis
+│           └── National conversation on the future of the NHS.html
+├── app.py                           # Flask application
+├── form-template.xml                # XML form definition (POC)
+├── requirements.txt                 # Python dependencies
+├── README.md                        # Setup instructions
 ├── data/
-│   └── submissions.json        # JSON file storing form submissions (auto-created)
+│   └── submissions.json             # Form submissions storage
 ├── templates/
-│   ├── form.html              # Main assessment form template
-│   └── success.html           # Success confirmation page
+│   ├── form.html                    # Main form (Alpine.js)
+│   └── success.html                 # Success confirmation
 └── static/
     └── css/
-        └── style.css          # Application styles
+        └── style.css                # Application styles
 ```
 
-## Core Files Description
+## Implementation Patterns
 
-### app.py (Main Application)
-- Flask application with routes for form display and submission
-- Form validation logic
-- JSON file read/write operations
-- Flash message handling for errors
-- Default port: 5000
+### Alpine.js State Management
 
-**Key Functions:**
-- `load_submissions()` - Loads all submissions from JSON file
-- `save_submission(data)` - Saves new submission with ID and timestamp
-- Routes: `/` (form), `/submit` (POST handler), `/success` (confirmation)
-
-### templates/form.html
-- Main job assessment form
-- Fields: name, email, phone, position, experience, skills
-- Client-side HTML5 validation attributes
-- Flash message display for server-side errors
-- Responsive design
-
-### templates/success.html
-- Success confirmation page after form submission
-- Option to submit another application
-- Clean, centered design with success icon
-
-### static/css/style.css
-- Modern gradient UI (purple/blue theme)
-- Responsive design for mobile and desktop
-- Form styling with focus states
-- Button hover effects
-- Alert/message styling
-
-### data/submissions.json
-- Auto-created on first submission
-- Each submission includes:
-  - `id`: Auto-incrementing number
-  - `timestamp`: ISO format timestamp
-  - All form fields (name, email, phone, position, experience, skills)
-
-## Configuration
-
-### Secret Key
-Location: `app.py`
-```python
-app.secret_key = 'your-secret-key-change-this-in-production'
-```
-**Important**: Change this in production environments!
-
-### Port Configuration
-Location: `app.py` (last line)
-```python
-app.run(debug=True, port=5000)
+```javascript
+x-data="{
+  currentStep: 1,
+  totalSteps: 2,
+  formData: $persist({
+    field1: '',
+    field2: ''
+  }).as('storageKey'),
+  clearDraft() {
+    this.formData = { field1: '', field2: '' };
+    this.currentStep = 1;
+  }
+}"
 ```
 
-### Debug Mode
-Currently set to `True` for development. Set to `False` for production.
+### Multi-Step Pagination
 
-## Form Fields
+- Controlled via `currentStep` state variable
+- Sections use `x-show="currentStep === N"` with transitions
+- Navigation buttons conditionally rendered based on step
 
-### Required Fields
-- Full Name (min 2 characters)
-- Email Address (must contain @)
-- Position Applied For (dropdown)
-- Years of Experience (dropdown)
+### Progress Bar
 
-### Optional Fields
-- Phone Number
-- Key Skills & Technologies (textarea)
+- Visual indicator with percentage width: `(currentStep / totalSteps * 100)%`
+- Step labels with dynamic bold styling for current step
+- CSS transition for smooth animation
 
-### Position Options
-- Frontend Developer
-- Backend Developer
-- Full Stack Developer
-- DevOps Engineer
-- QA Engineer
-- Project Manager
-- Other
+### Persistence
 
-### Experience Ranges
-- 0-1 years
-- 1-3 years
-- 3-5 years
-- 5-10 years
-- 10+ years
+- **Client-side**: Alpine.js `$persist()` saves to localStorage automatically
+- **Server-side**: Flask saves submissions to JSON file
+- **On success**: localStorage cleared via `localStorage.removeItem('_x_storageKey')`
 
-## Validation Rules
+### Validation
 
-Server-side validation in `app.py` checks:
-1. Name: Required, min 2 characters
-2. Email: Required, must contain @
-3. Position: Required
-4. Experience: Required
+- **Client-side**: HTML5 attributes (required, minlength, type)
+- **Server-side**: Flask validation in `/submit` route
+- **Errors**: Flask flash messages displayed in form
 
-Validation errors are displayed via Flask flash messages.
+## Flask Routes
 
-## Data Flow
+| Route | Method | Purpose |
+|-------|--------|---------|
+| `/` | GET | Display form |
+| `/submit` | POST | Process submission |
+| `/success` | GET | Show confirmation |
 
-1. User fills out form at `/`
-2. Form submits POST to `/submit`
-3. Server validates input
-4. If invalid: redirect to `/` with error messages
-5. If valid: save to JSON file and redirect to `/success`
+## Current POC: Job Assessment Form
+
+### Fields
+- Full Name (required, min 2 chars)
+- Email Address (required)
+- Phone Number (optional)
+- Position Applied For (select, required)
+- Years of Experience (select, required)
+- Key Skills (textarea, optional)
+
+### Steps
+1. Personal Information (name, email, phone)
+2. Professional Details (position, experience, skills)
+
+---
+
+## Work in Progress: NHS National Conversation Form
+
+### Source Form Analysis
+
+The original NHS form (`.claude/prompts/analysis-of-old-form/`) has these UX issues:
+- Single long page - overwhelming
+- Dense intro text with buried important info
+- No progress indicator
+- No draft persistence
+- Complex date of birth input (3 separate fields)
+- Long education definitions cluttering the form
+
+### Proposed UX Improvements
+
+Break into **4 logical steps** with pagination, progress bar, and persistence:
+
+| Step | Section | Fields |
+|------|---------|--------|
+| 1 | Welcome & Eligibility | Event info, attendance confirmation, eligibility checkboxes |
+| 2 | Contact Details | First/last name, email, phone, address (line 1, line 2, city, postcode) |
+| 3 | About You | Gender, DOB, ethnicity, disability status, NHS satisfaction, education level |
+| 4 | Consent & Submit | Data consent checkbox, future contact opt-in, submit button |
+
+### Additional Improvements
+- Move education definitions to collapsible/tooltip
+- Cleaner DOB input grouping
+- Helpful hints and placeholders
+- Section context in progress indicator
+
+### Form Fields (from original)
+
+**Eligibility (checkboxes)**
+- Can attend all dates
+- Is eligible (age 16+, UK resident, received invitation, not excluded roles)
+
+**Contact Details**
+- First Name, Last Name
+- Email, Phone
+- Address Line 1, Address Line 2, City, Post Code
+
+**Demographics**
+- Gender (Female, Male, Non-binary/Other)
+- Date of Birth (Day, Month, Year)
+- Ethnic group (7 options)
+- Disability status (3 options)
+- NHS satisfaction (5-point scale)
+- Highest educational qualification (6 levels with definitions)
+
+**Consent**
+- Data use consent (required)
+- Stay on database for future events (optional)
+
+---
 
 ## Development Setup
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 python3 -m venv venv
-
-# Activate virtual environment
 source venv/bin/activate  # macOS/Linux
-# or
-venv\Scripts\activate  # Windows
 
 # Install dependencies
 pip install -r requirements.txt
@@ -154,26 +227,16 @@ pip install -r requirements.txt
 python app.py
 ```
 
-## Common Tasks
+## Configuration
 
-### View Submissions
-```bash
-cat data/submissions.json
-# or formatted:
-python -m json.tool data/submissions.json
+### Secret Key
+Location: `app.py`
+```python
+app.secret_key = 'your-secret-key-change-this-in-production'
 ```
 
-### Change Port
-Edit `app.py` line 63 (or last line)
-
-### Add Form Fields
-1. Add HTML input in `templates/form.html`
-2. Update `submit()` function in `app.py` to capture field
-3. Add validation if needed
-4. Update `submission_data` dict to include new field
-
-### Customize Styling
-Edit `static/css/style.css`
+### Debug Mode
+Set `debug=False` for production in `app.py`.
 
 ## Security Considerations
 
@@ -181,28 +244,18 @@ Edit `static/css/style.css`
 - Set `debug=False` in production
 - Add CSRF protection for production use
 - Validate and sanitize all user inputs
-- Consider adding rate limiting for production
-
-## Future Enhancements (Ideas)
-
-- Admin panel to view submissions
-- Export submissions to CSV
-- Email notifications on submission
-- File upload capability
-- Database migration (SQLite, PostgreSQL)
-- User authentication
-- CSRF token implementation
-- API endpoints for submissions
+- Consider rate limiting for production
 
 ## Dependencies
 
 - Flask==3.0.0 - Web framework
-- Werkzeug==3.0.1 - WSGI utility library (Flask dependency)
+- Werkzeug==3.0.1 - WSGI utility library
+- Alpine.js 3.x (CDN) - Frontend reactivity
+- Alpine.js Persist plugin (CDN) - localStorage persistence
 
 ## Notes
 
-- This is a minimal implementation for assessment purposes
-- No external database required
-- All data persists in `data/submissions.json`
-- Virtual environment recommended for isolation
-- Compatible with Python 3.7+
+- This is a POC demonstrating AI-aided form templating
+- XML templates serve as structured prompts for implementation
+- All client data persists in localStorage until submission
+- Server data persists in `data/submissions.json`
