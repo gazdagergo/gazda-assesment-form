@@ -7,7 +7,7 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #e66f43 0%, #b9461a 100%);
     min-height: 100vh;
     padding: 20px;
     line-height: 1.6;
@@ -64,6 +64,7 @@ h1 {
 .form-group {
     display: flex;
     flex-direction: column;
+    margin-top: 18px;
 }
 
 label {
@@ -109,6 +110,12 @@ select {
 }
 
 /* Buttons */
+.button-group {
+    margin-top: 36px;
+    display: flex;
+    gap: 16px;
+}
+
 .form-actions {
     display: flex;
     gap: 10px;
@@ -129,7 +136,7 @@ select {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #e66f43 0%, #b9461a 100%);
     color: white;
     flex: 1;
 }
@@ -146,6 +153,30 @@ select {
 
 .btn-secondary:hover {
     background: #e0e0e0;
+}
+
+a {
+    color: #e66f43;
+}
+
+/* Progress bar */
+.progress-container {
+    margin-top: 18px;
+    margin-bottom: 24px;
+}
+
+.progress-bar {
+    height: 8px;
+    background: #e4e4e4;
+}
+
+.progress-text {
+    margin-top: 8px;
+}
+
+.progress-fill {
+    height: 8px;
+    background: #e66f43;
 }
 
 /* Success Page */
@@ -188,6 +219,26 @@ select {
 
 .success-actions {
     margin-top: 30px;
+}
+
+/* Notes */
+
+.note {
+    background: rgba(255, 193, 7, 0.2);
+    padding: 0.75rem;
+    border-radius: 4px;
+    border-left: 3px solid #ffc107;
+    margin: 12px 0;
+}
+
+.note.blue {
+    border-left: 3px solid #8888aa;
+    background: rgba(180, 180, 240, 0.2);
+}
+
+.small-info {
+    font-size: 14px;
+    color: #999;
 }
 
 /* Responsive */

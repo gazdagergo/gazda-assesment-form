@@ -61,8 +61,7 @@
     -->
     <Pagination totalSteps="4">
         <ProgressIndicator
-            logic="Shows step labels with bold text for active step.
-                   Progress bar fills proportionally (25%, 50%, 75%, 100%).
+            logic="Progress bar fills proportionally (25%, 50%, 75%, 100%).
                    Display format: 'Step X of 4: Section Name'" />
     </Pagination>
 

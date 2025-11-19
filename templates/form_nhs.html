@@ -25,12 +25,6 @@
         .intro-text li {
             margin-bottom: 0.25rem;
         }
-        .note {
-            background: rgba(255, 193, 7, 0.2);
-            padding: 0.75rem;
-            border-radius: 4px;
-            border-left: 3px solid #ffc107;
-        }
         .section-intro {
             font-size: 0.95rem;
             opacity: 0.9;
@@ -177,16 +171,13 @@
                     };
                     this.currentStep = 1;
                 },
-                stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit']
+               stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit']
             }">
+
+            <h2 x-text="stepNames[currentStep - 1]"></h2>
 
             <!-- Progress Indicator -->
             <div class="progress-container">
-                <div class="progress-labels">
-                    <template x-for="(name, index) in stepNames" :key="index">
-                        <span :style="currentStep === index + 1 ? 'font-weight: bold;' : ''" x-text="name"></span>
-                    </template>
-                </div>
                 <div class="progress-bar">
                     <div class="progress-fill" :style="'width: ' + (currentStep / totalSteps * 100) + '%'"></div>
                 </div>
@@ -197,22 +188,38 @@
 
             <!-- Step 1: Welcome & Eligibility -->
             <div x-show="currentStep === 1" x-transition>
-                <h2>Welcome & Eligibility</h2>
-
                 <div class="intro-text">
                     <p>Thank you for your interest in taking part in a <strong>national conversation on the future of the NHS</strong>.</p>
 
-                    <p><strong>Event Details:</strong></p>
-                    <ul>
-                        <li>Date: Saturday 30 November</li>
-                        <li>Location: Ipswich</li>
-                        <li>Online workshop: Week prior (evening 6pm-8pm, choose your date)</li>
-                        <li>Compensation: <strong>£175</strong> for your time</li>
-                    </ul>
+                    <div class="note blue">
+                        <p><strong>Highlights:</strong></p>
+                        <ul>
+                            <li>Date: Saturday 30 November</li>
+                            <li>Location: Ipswich</li>
+                            <li>Online workshop: Week prior (evening 6pm-8pm, choose your date)</li>
+                            <li>Compensation: <strong>£175</strong> for your time</li>
+                        </ul>
+                    </div>
 
-                    <p><strong>Need help?</strong> Call Freephone <strong>0800 009 6486</strong> (8am-8pm daily) or email participants@sortitionfoundation.org</p>
+                    <div class="small-info">
+                        <p>On the week prior to the in-person discussions you will also be invited to take part in a 2-hour online workshop. These will be held in the evening from 6pm – 8pm. You will be able to choose the evening you attend.</p>
 
-                    <p class="note"><strong>Important:</strong> Each person must have their own email address. If you share an email or don't have one, please call to register.</p>
+                        <p>All participants will receive £175 as a thank you for your time. If there is anything we can do to help you to take part, we will be happy to discuss this with you. We can look into options if you do not have a video device or an internet connection - please register for the event whatever your situation, and someone will be in touch if you are selected to take part.</p>
+
+                        <p>Please call our Freephone number 0800 009 6486 (8am–8pm every day) if you need help registering or have other questions. You can also email questions to nhs@sortitionfoundation.org .</p>
+                    </div>
+
+                    <p><strong>Need help?</strong> Call Freephone <strong>0800 009 6486</strong> (8am-8pm daily) or email <a href="mailto:nhs@sortitionfoundation.org">nhs@sortitionfoundation.org</a></p>
+
+                    <div class="note">
+                        <strong>Important:</strong>
+                        <ul>
+                            <li>Every person who registers online must have their own individual email address. If you do not have an email address, or you share one with someone else who is registering, please ring the Freephone number above to register.</li>
+                            <li>All fields marked with an asterisk (*) must be completed.</li>
+                            <li>We will share all your contact, attitudinal and demographic details with Thinks, the organisation running this event, and they will make a separate data agreement with you if you are selected to take part. Your data will be kept strictly confidential. We will delete your details within one year of the completion of the event, unless you tell us otherwise below. Please read our Privacy Policy for more details.</li>
+                            <li>At any time, you can withdraw your consent and ask us to delete your data, or request a copy of it, by emailing privacy@sortitionfoundation.org. If you ask us to delete your data, we will tell the other organisation(s) listed above to do the same.</li>
+                        </ul>
+                    </div>
                 </div>
 
                 <div class="checkbox-group">
@@ -238,8 +245,6 @@
 
             <!-- Step 2: Contact Details -->
             <div x-show="currentStep === 2" x-transition>
-                <h2>Contact Details</h2>
-
                 <p class="section-intro">We use these details to communicate with you about this event.</p>
 
                 <div class="form-group">
@@ -285,8 +290,6 @@
 
             <!-- Step 3: About You -->
             <div x-show="currentStep === 3" x-transition>
-                <h2>About You</h2>
-
                 <p class="section-intro">We use these details in our democratic lottery process to select a group of participants that broadly represents the entire community.</p>
 
                 <div class="form-group">
@@ -391,8 +394,6 @@
 
             <!-- Step 4: Consent & Submit -->
             <div x-show="currentStep === 4" x-transition>
-                <h2>Consent & Submit</h2>
-
                 <p class="section-intro">Please review and confirm your consent to participate.</p>
 
                 <div class="data-notice">
