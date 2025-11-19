@@ -1,0 +1,419 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    AI-Aided Template for NHS National Conversation Application Form
+
+    This XML describes the form structure and logic.
+    Claude interprets this to generate/modify the actual implementation.
+
+    Tech Stack: Flask + Jinja2 + Alpine.js + $persist
+
+    Event: National conversation on the future of the NHS
+    Location: Ipswich
+    Date: Saturday 30 November
+    Compensation: £175
+-->
+
+<Form
+    title="National conversation on the future of the NHS"
+    subtitle="Register your interest in participating"
+    action="/submit"
+    method="POST"
+    novalidate="true">
+
+    <!--
+        Global State Management
+        Uses Alpine.js $persist to save form data to localStorage.
+        Data persists across page reloads and validation errors.
+        Cleared on successful submission and when user clicks Clear Form.
+    -->
+    <State persist="true" storageKey="nhsConversationDraft">
+        <!-- Eligibility -->
+        <Field name="canAttend" default="false" />
+        <Field name="isEligible" default="false" />
+        <!-- Contact Details -->
+        <Field name="firstName" default="" />
+        <Field name="lastName" default="" />
+        <Field name="email" default="" />
+        <Field name="phone" default="" />
+        <Field name="address1" default="" />
+        <Field name="address2" default="" />
+        <Field name="city" default="" />
+        <Field name="postCode" default="" />
+        <!-- About You -->
+        <Field name="gender" default="" />
+        <Field name="dobDay" default="" />
+        <Field name="dobMonth" default="" />
+        <Field name="dobYear" default="" />
+        <Field name="ethnicity" default="" />
+        <Field name="disability" default="" />
+        <Field name="nhsSatisfaction" default="" />
+        <Field name="education" default="" />
+        <!-- Consent -->
+        <Field name="dataConsent" default="false" />
+        <Field name="futureContact" default="false" />
+    </State>
+
+    <!--
+        Pagination Logic
+        Form is split into 4 steps for better UX.
+        User navigates with Next/Previous buttons.
+        Progress indicator shows current step visually.
+    -->
+    <Pagination totalSteps="4">
+        <ProgressIndicator
+            logic="Shows step labels with bold text for active step.
+                   Progress bar fills proportionally (25%, 50%, 75%, 100%).
+                   Display format: 'Step X of 4: Section Name'" />
+    </Pagination>
+
+    <!-- Flash Messages from Server -->
+    <Messages
+        source="flask flash messages"
+        logic="Display validation errors from server with alert styling" />
+
+    <!-- Step 1: Welcome & Eligibility -->
+    <FormSection step="1" title="Welcome &amp; Eligibility">
+
+        <IntroText>
+            <Paragraph>
+                Thank you for your interest in taking part in a national conversation
+                on the future of the NHS.
+            </Paragraph>
+            <Paragraph>
+                <Strong>Event Details:</Strong>
+                <List>
+                    <Item>Date: Saturday 30 November</Item>
+                    <Item>Location: Ipswich</Item>
+                    <Item>Online workshop: Week prior (evening 6pm-8pm, choose your date)</Item>
+                    <Item>Compensation: £175 for your time</Item>
+                </List>
+            </Paragraph>
+            <Paragraph>
+                <Strong>Need help?</Strong> Call Freephone 0800 009 6486 (8am-8pm daily)
+                or email participants@sortitionfoundation.org
+            </Paragraph>
+            <Paragraph type="note">
+                <Strong>Important:</Strong> Each person must have their own email address.
+                If you share an email or don't have one, please call to register.
+            </Paragraph>
+        </IntroText>
+
+        <CheckboxField
+            name="canAttend"
+            label="I can attend all dates"
+            required="true"
+            model="formData.canAttend"
+            helpText="I can attend the conversation on Saturday 30 November"
+            logic="Required eligibility confirmation. Must be checked to proceed." />
+
+        <CheckboxField
+            name="isEligible"
+            label="I am eligible to attend"
+            required="true"
+            model="formData.isEligible"
+            helpText="I am 16 years or over, live in the UK at an address that received an invitation, and am NOT an elected representative, political party employee, Council employee in a politically restricted role, or journalist."
+            logic="Required eligibility confirmation. Must be checked to proceed." />
+
+    </FormSection>
+
+    <!-- Step 2: Contact Details -->
+    <FormSection step="2" title="Contact Details">
+
+        <SectionIntro>
+            We use these details to communicate with you about this event.
+        </SectionIntro>
+
+        <FormField
+            name="firstName"
+            label="First Name"
+            type="text"
+            required="true"
+            placeholder="First Name"
+            model="formData.firstName"
+            logic="Binds to persisted state. Required field." />
+
+        <FormField
+            name="lastName"
+            label="Last Name"
+            type="text"
+            required="true"
+            placeholder="Last Name"
+            model="formData.lastName"
+            logic="Binds to persisted state. Required field." />
+
+        <FormField
+            name="email"
+            label="Email"
+            type="email"
+            required="true"
+            placeholder="example@mail.com"
+            model="formData.email"
+            logic="Binds to persisted state. Validates: must contain @. Each registrant needs unique email." />
+
+        <FormField
+            name="phone"
+            label="Phone (mobile or home)"
+            type="tel"
+            required="true"
+            placeholder="Your phone number"
+            model="formData.phone"
+            logic="Binds to persisted state. Required for contact." />
+
+        <FormField
+            name="address1"
+            label="Address Line 1"
+            type="text"
+            required="true"
+            placeholder="Street address"
+            model="formData.address1"
+            logic="Binds to persisted state. Required field." />
+
+        <FormField
+            name="address2"
+            label="Address Line 2"
+            type="text"
+            required="false"
+            placeholder="Apartment, suite, etc. (optional)"
+            model="formData.address2"
+            logic="Binds to persisted state. Optional field." />
+
+        <FormField
+            name="city"
+            label="City"
+            type="text"
+            required="true"
+            placeholder="City"
+            model="formData.city"
+            logic="Binds to persisted state. Required field." />
+
+        <FormField
+            name="postCode"
+            label="Post Code"
+            type="text"
+            required="true"
+            placeholder="Post code"
+            model="formData.postCode"
+            logic="Binds to persisted state. Required field." />
+
+    </FormSection>
+
+    <!-- Step 3: About You -->
+    <FormSection step="3" title="About You">
+
+        <SectionIntro>
+            We use these details in our democratic lottery process to select a group
+            of participants that broadly represents the entire community.
+        </SectionIntro>
+
+        <SelectField
+            name="gender"
+            label="What gender do you identify as?"
+            required="true"
+            model="formData.gender"
+            defaultOption="Please select..."
+            logic="Binds to persisted state. Required for demographic lottery.">
+            <Option value="2">Female</Option>
+            <Option value="1">Male</Option>
+            <Option value="3">Non-binary or Other</Option>
+        </SelectField>
+
+        <FieldGroup label="What is your date of birth?">
+            <SelectField
+                name="dobDay"
+                label="Day"
+                required="true"
+                model="formData.dobDay"
+                defaultOption="Please select..."
+                logic="Binds to persisted state. Part of DOB group.">
+                <!-- Days 1-31 -->
+                <Option value="1">1</Option>
+                <Option value="2">2</Option>
+                <Option value="3">3</Option>
+                <Option value="4">4</Option>
+                <Option value="5">5</Option>
+                <Option value="6">6</Option>
+                <Option value="7">7</Option>
+                <Option value="8">8</Option>
+                <Option value="9">9</Option>
+                <Option value="10">10</Option>
+                <Option value="11">11</Option>
+                <Option value="12">12</Option>
+                <Option value="13">13</Option>
+                <Option value="14">14</Option>
+                <Option value="15">15</Option>
+                <Option value="16">16</Option>
+                <Option value="17">17</Option>
+                <Option value="18">18</Option>
+                <Option value="19">19</Option>
+                <Option value="20">20</Option>
+                <Option value="21">21</Option>
+                <Option value="22">22</Option>
+                <Option value="23">23</Option>
+                <Option value="24">24</Option>
+                <Option value="25">25</Option>
+                <Option value="26">26</Option>
+                <Option value="27">27</Option>
+                <Option value="28">28</Option>
+                <Option value="29">29</Option>
+                <Option value="30">30</Option>
+                <Option value="31">31</Option>
+            </SelectField>
+
+            <SelectField
+                name="dobMonth"
+                label="Month"
+                required="true"
+                model="formData.dobMonth"
+                defaultOption="Please select..."
+                logic="Binds to persisted state. Part of DOB group.">
+                <Option value="1">January</Option>
+                <Option value="2">February</Option>
+                <Option value="3">March</Option>
+                <Option value="4">April</Option>
+                <Option value="5">May</Option>
+                <Option value="6">June</Option>
+                <Option value="7">July</Option>
+                <Option value="8">August</Option>
+                <Option value="9">September</Option>
+                <Option value="10">October</Option>
+                <Option value="11">November</Option>
+                <Option value="12">December</Option>
+            </SelectField>
+
+            <FormField
+                name="dobYear"
+                label="Year"
+                type="text"
+                required="true"
+                placeholder="YYYY"
+                model="formData.dobYear"
+                logic="Binds to persisted state. Part of DOB group. Text input for year." />
+        </FieldGroup>
+
+        <SelectField
+            name="ethnicity"
+            label="What is your ethnic group?"
+            required="true"
+            model="formData.ethnicity"
+            defaultOption="Please select..."
+            logic="Binds to persisted state. Required for demographic lottery.">
+            <Option value="3">Asian or Asian British</Option>
+            <Option value="4">Black, African, Caribbean or Black British</Option>
+            <Option value="2">Mixed or Multiple ethnic groups</Option>
+            <Option value="1">White English, Welsh, Scottish, Northern Irish or British</Option>
+            <Option value="7">White Irish</Option>
+            <Option value="6">White other</Option>
+            <Option value="5">Other ethnic group</Option>
+        </SelectField>
+
+        <SelectField
+            name="disability"
+            label="Do you have any physical or mental health conditions or illnesses lasting or expected to last 12 months or more which limit your ability to carry out day-to-day activities?"
+            required="true"
+            model="formData.disability"
+            defaultOption="Please select..."
+            logic="Binds to persisted state. Required for demographic lottery.">
+            <Option value="2">Yes, limited a little</Option>
+            <Option value="1">Yes, limited a lot</Option>
+            <Option value="3">No</Option>
+        </SelectField>
+
+        <SelectField
+            name="nhsSatisfaction"
+            label="All in all, how satisfied or dissatisfied would you say you are with the way in which the National Health Service runs nowadays?"
+            required="true"
+            model="formData.nhsSatisfaction"
+            defaultOption="Please select..."
+            logic="Binds to persisted state. Attitudinal question for participant selection.">
+            <Option value="1">Very satisfied</Option>
+            <Option value="2">Quite satisfied</Option>
+            <Option value="3">Neither satisfied nor dissatisfied</Option>
+            <Option value="4">Quite dissatisfied</Option>
+            <Option value="5">Very dissatisfied</Option>
+        </SelectField>
+
+        <SelectField
+            name="education"
+            label="What is your highest educational qualification?"
+            required="true"
+            model="formData.education"
+            defaultOption="Please select..."
+            helpText="Click for definitions"
+            helpContent="Level 1: Up to 4 GCSEs (A*-C), 1 AS level, NVQ level 1. Level 2: 5+ GCSEs (A*-C), 1 A level, NVQ level 2. Level 3: 2+ A levels, NVQ level 3. Level 4+: Degree, higher degree, professional qualifications."
+            logic="Binds to persisted state. Required for demographic lottery. Include tooltip/collapsible for definitions.">
+            <Option value="1">No qualifications, or none yet</Option>
+            <Option value="2">Level 1</Option>
+            <Option value="3">Level 2</Option>
+            <Option value="4">Level 3</Option>
+            <Option value="5">Level 4 or above</Option>
+            <Option value="6">Apprenticeship, or other qualification</Option>
+        </SelectField>
+
+    </FormSection>
+
+    <!-- Step 4: Consent & Submit -->
+    <FormSection step="4" title="Consent &amp; Submit">
+
+        <SectionIntro>
+            Please review and confirm your consent to participate.
+        </SectionIntro>
+
+        <DataSharingNotice>
+            We will share your contact, attitudinal and demographic details with
+            <Link href="https://www.thinksinsight.com/">Thinks</Link>, the organisation
+            running this event. They will make a separate data agreement with you if selected.
+            Your data will be kept strictly confidential and deleted within one year of
+            event completion unless you opt in below.
+        </DataSharingNotice>
+
+        <CheckboxField
+            name="dataConsent"
+            label="I consent to the use of my data as described on this page"
+            required="true"
+            model="formData.dataConsent"
+            helpText="Read our privacy policy for more details"
+            helpLink="/privacy_policy"
+            logic="Required consent checkbox. Must be checked to submit." />
+
+        <CheckboxField
+            name="futureContact"
+            label="Please also inform me of similar events in the future"
+            required="false"
+            model="formData.futureContact"
+            helpText="Do not delete my details after this event"
+            logic="Optional marketing opt-in. Binds to persisted state." />
+
+        <WithdrawalNotice>
+            At any time, you can withdraw your consent and ask us to delete your data
+            by emailing participants@sortitionfoundation.org
+        </WithdrawalNotice>
+
+    </FormSection>
+
+    <!-- Navigation -->
+    <Navigation>
+        <PreviousButton
+            label="Previous"
+            logic="Shows only when not on first step. Decrements currentStep." />
+
+        <NextButton
+            label="Next"
+            styling="primary coloring"
+            logic="Shows only when not on last step. Increments currentStep." />
+
+        <SubmitButton
+            label="Register"
+            styling="primary coloring"
+            logic="Shows only on last step. Submits form to server." />
+
+        <ClearButton
+            label="Clear Form"
+            logic="Resets all form fields to defaults. Clears persisted localStorage data. Returns to step 1." />
+    </Navigation>
+
+    <!-- Success Behavior -->
+    <OnSuccess
+        redirect="/success"
+        logic="Clear persisted localStorage data when success page loads. Show confirmation message with next steps." />
+
+</Form>
