@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    AI-Aided Template for Job Assessment Form
+
+    This XML describes the form structure and logic.
+    Claude interprets this to generate/modify the actual implementation.
+
+    Tech Stack: Flask + Jinja2 + Alpine.js + $persist
+-->
+
+<Form
+    title="Job Assessment Form"
+    subtitle="Please fill out the form below to apply for the position"
+    action="/submit"
+    method="POST"
+    novalidate="true">
+
+    <!--
+        Global State Management
+        Uses Alpine.js $persist to save form data to localStorage.
+        Data persists across page reloads and validation errors.
+        Cleared on successful submission and when user clicks Clear Form.
+    -->
+    <State persist="true" storageKey="jobApplicationDraft">
+        <Field name="name" default="" />
+        <Field name="email" default="" />
+        <Field name="phone" default="" />
+        <Field name="position" default="" />
+        <Field name="experience" default="" />
+        <Field name="skills" default="" />
+    </State>
+
+    <!--
+        Pagination Logic
+        Form is split into steps. User navigates with Next/Previous buttons.
+        Progress indicator shows current step visually.
+    -->
+    <Pagination totalSteps="2">
+        <ProgressIndicator
+            logic="Shows step labels with bold text for active step.
+                   Progress bar fills proportionally. The 'step' attribute of each FormSection defines which page the section should appear on" />
+    </Pagination>
+
+    <!-- Flash Messages from Server -->
+    <Messages
+        source="flask flash messages"
+        logic="Display validation errors from server with alert styling" />
+
+    <!-- Step 1: Personal Information -->
+    <FormSection step="1" title="Personal Information">
+
+        <FormField
+            name="name"
+            label="Full Name"
+            type="text"
+            required="true"
+            minlength="2"
+            placeholder="Enter your full name"
+            model="formData.name"
+            logic="Binds to persisted state. Validates on server: must be at least 2 characters." />
+
+        <FormField
+            name="email"
+            label="Email Address"
+            type="email"
+            required="true"
+            placeholder="your.email@example.com"
+            model="formData.email"
+            logic="Binds to persisted state. Validates on server: must contain @." />
+
+        <FormField
+            name="phone"
+            label="Phone Number"
+            type="tel"
+            required="false"
+            placeholder="+36 XX XXX XXXX"
+            model="formData.phone"
+            logic="Optional field. Binds to persisted state." />
+
+    </FormSection>
+
+    <!-- Step 2: Professional Experience -->
+    <FormSection step="2" title="Professional Experience">
+
+        <SelectField
+            name="position"
+            label="Position Applied For"
+            required="true"
+            model="formData.position"
+            defaultOption="-- Select Position --"
+            logic="Binds to persisted state. Validates on server: required.">
+            <Option value="frontend-developer">Frontend Developer</Option>
+            <Option value="backend-developer">Backend Developer</Option>
+            <Option value="fullstack-developer">Full Stack Developer</Option>
+            <Option value="devops-engineer">DevOps Engineer</Option>
+            <Option value="qa-engineer">QA Engineer</Option>
+            <Option value="project-manager">Project Manager</Option>
+            <Option value="other">Other</Option>
+        </SelectField>
+
+        <SelectField
+            name="experience"
+            label="Years of Experience"
+            required="true"
+            model="formData.experience"
+            defaultOption="-- Select Experience --"
+            logic="Binds to persisted state. Validates on server: required.">
+            <Option value="0-1">0-1 years</Option>
+            <Option value="1-3">1-3 years</Option>
+            <Option value="3-5">3-5 years</Option>
+            <Option value="5-10">5-10 years</Option>
+            <Option value="10+">10+ years</Option>
+        </SelectField>
+
+        <TextareaField
+            name="skills"
+            label="Key Skills &amp; Technologies"
+            required="false"
+            rows="5"
+            placeholder="List your key skills, technologies, and areas of expertise..."
+            model="formData.skills"
+            logic="Optional field. Binds to persisted state." />
+
+    </FormSection>
+
+    <!-- Navigation -->
+    <Navigation>
+        <PreviousButton
+            label="Previous"
+            logic="Shows only when not on first step. Decrements currentStep." />
+
+        <NextButton
+            label="Next"
+            styling="primary coloring"
+            logic="Shows only when not on last step. Increments currentStep." />
+
+        <SubmitButton
+            label="Submit Application"
+            styling="primary coloring"
+            logic="Shows only on last step. Submits form to server." />
+
+        <ClearButton
+            label="Clear Form"
+            logic="Resets all form fields to empty. Clears persisted localStorage data. Returns to step 1." />
+    </Navigation>
+
+    <!-- Success Behavior -->
+    <OnSuccess
+        redirect="/success"
+        logic="Clear persisted localStorage data when success page loads." />
+
+</Form>
