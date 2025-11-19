@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>National conversation on the future of the NHS</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <style>
+        /* NHS form specific styles */
+        .intro-text {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+        .intro-text p {
+            margin-bottom: 0.75rem;
+        }
+        .intro-text ul {
+            margin: 0.5rem 0;
+            padding-left: 1.5rem;
+        }
+        .intro-text li {
+            margin-bottom: 0.25rem;
+        }
+        .note {
+            background: rgba(255, 193, 7, 0.2);
+            padding: 0.75rem;
+            border-radius: 4px;
+            border-left: 3px solid #ffc107;
+        }
+        .section-intro {
+            font-size: 0.95rem;
+            opacity: 0.9;
+            margin-bottom: 1.5rem;
+        }
+        .checkbox-group {
+            margin-bottom: 1.5rem;
+        }
+        .checkbox-group label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            cursor: pointer;
+        }
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            margin-top: 0.25rem;
+            flex-shrink: 0;
+        }
+        .checkbox-group .checkbox-content {
+            flex: 1;
+        }
+        .checkbox-group .checkbox-label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+        .checkbox-group .help-text {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            font-style: italic;
+        }
+        .field-group {
+            margin-bottom: 1.5rem;
+        }
+        .field-group-label {
+            display: block;
+            margin-bottom: 0.75rem;
+            font-weight: 500;
+        }
+        .field-group-fields {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+        }
+        .field-group-fields .form-group {
+            margin-bottom: 0;
+        }
+        .data-notice {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+        .data-notice a {
+            color: #fff;
+            text-decoration: underline;
+        }
+        .withdrawal-notice {
+            font-size: 0.85rem;
+            opacity: 0.8;
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .help-tooltip {
+            font-size: 0.8rem;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 0.25rem;
+        }
+        @media (max-width: 600px) {
+            .field-group-fields {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>National conversation on the future of the NHS</h1>
+        <p class="subtitle">Register your interest in participating</p>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">{{ message }}</div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form
+            method="POST"
+            action="/submit"
+            novalidate
+            x-data="{
+                currentStep: 1,
+                totalSteps: 4,
+                formData: $persist({
+                    canAttend: false,
+                    isEligible: false,
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: '',
+                    address1: '',
+                    address2: '',
+                    city: '',
+                    postCode: '',
+                    gender: '',
+                    dobDay: '',
+                    dobMonth: '',
+                    dobYear: '',
+                    ethnicity: '',
+                    disability: '',
+                    nhsSatisfaction: '',
+                    education: '',
+                    dataConsent: false,
+                    futureContact: false
+                }).as('nhsConversationDraft'),
+                clearDraft() {
+                    this.formData = {
+                        canAttend: false,
+                        isEligible: false,
+                        firstName: '',
+                        lastName: '',
+                        email: '',
+                        phone: '',
+                        address1: '',
+                        address2: '',
+                        city: '',
+                        postCode: '',
+                        gender: '',
+                        dobDay: '',
+                        dobMonth: '',
+                        dobYear: '',
+                        ethnicity: '',
+                        disability: '',
+                        nhsSatisfaction: '',
+                        education: '',
+                        dataConsent: false,
+                        futureContact: false
+                    };
+                    this.currentStep = 1;
+                },
+                stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit']
+            }">
+
+            <!-- Progress Indicator -->
+            <div class="progress-container">
+                <div class="progress-labels">
+                    <template x-for="(name, index) in stepNames" :key="index">
+                        <span :style="currentStep === index + 1 ? 'font-weight: bold;' : ''" x-text="name"></span>
+                    </template>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" :style="'width: ' + (currentStep / totalSteps * 100) + '%'"></div>
+                </div>
+                <div class="progress-text">
+                    Step <span x-text="currentStep"></span> of <span x-text="totalSteps"></span>
+                </div>
+            </div>
+
+            <!-- Step 1: Welcome & Eligibility -->
+            <div x-show="currentStep === 1" x-transition>
+                <h2>Welcome & Eligibility</h2>
+
+                <div class="intro-text">
+                    <p>Thank you for your interest in taking part in a <strong>national conversation on the future of the NHS</strong>.</p>
+
+                    <p><strong>Event Details:</strong></p>
+                    <ul>
+                        <li>Date: Saturday 30 November</li>
+                        <li>Location: Ipswich</li>
+                        <li>Online workshop: Week prior (evening 6pm-8pm, choose your date)</li>
+                        <li>Compensation: <strong>£175</strong> for your time</li>
+                    </ul>
+
+                    <p><strong>Need help?</strong> Call Freephone <strong>0800 009 6486</strong> (8am-8pm daily) or email participants@sortitionfoundation.org</p>
+
+                    <p class="note"><strong>Important:</strong> Each person must have their own email address. If you share an email or don't have one, please call to register.</p>
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="canAttend" x-model="formData.canAttend" required>
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">I can attend all dates *</span>
+                            <span class="help-text">I can attend the conversation on Saturday 30 November</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="isEligible" x-model="formData.isEligible" required>
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">I am eligible to attend *</span>
+                            <span class="help-text">I am 16 years or over, live in the UK at an address that received an invitation, and am NOT an elected representative, political party employee, Council employee in a politically restricted role, or journalist.</span>
+                        </div>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Step 2: Contact Details -->
+            <div x-show="currentStep === 2" x-transition>
+                <h2>Contact Details</h2>
+
+                <p class="section-intro">We use these details to communicate with you about this event.</p>
+
+                <div class="form-group">
+                    <label for="firstName">First Name *</label>
+                    <input type="text" id="firstName" name="firstName" x-model="formData.firstName" placeholder="First Name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="lastName">Last Name *</label>
+                    <input type="text" id="lastName" name="lastName" x-model="formData.lastName" placeholder="Last Name" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="email">Email *</label>
+                    <input type="email" id="email" name="email" x-model="formData.email" placeholder="example@mail.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="phone">Phone (mobile or home) *</label>
+                    <input type="tel" id="phone" name="phone" x-model="formData.phone" placeholder="Your phone number" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address1">Address Line 1 *</label>
+                    <input type="text" id="address1" name="address1" x-model="formData.address1" placeholder="Street address" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="address2">Address Line 2</label>
+                    <input type="text" id="address2" name="address2" x-model="formData.address2" placeholder="Apartment, suite, etc. (optional)">
+                </div>
+
+                <div class="form-group">
+                    <label for="city">City *</label>
+                    <input type="text" id="city" name="city" x-model="formData.city" placeholder="City" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="postCode">Post Code *</label>
+                    <input type="text" id="postCode" name="postCode" x-model="formData.postCode" placeholder="Post code" required>
+                </div>
+            </div>
+
+            <!-- Step 3: About You -->
+            <div x-show="currentStep === 3" x-transition>
+                <h2>About You</h2>
+
+                <p class="section-intro">We use these details in our democratic lottery process to select a group of participants that broadly represents the entire community.</p>
+
+                <div class="form-group">
+                    <label for="gender">What gender do you identify as? *</label>
+                    <select id="gender" name="gender" x-model="formData.gender" required>
+                        <option value="" disabled>Please select...</option>
+                        <option value="2">Female</option>
+                        <option value="1">Male</option>
+                        <option value="3">Non-binary or Other</option>
+                    </select>
+                </div>
+
+                <div class="field-group">
+                    <span class="field-group-label">What is your date of birth? *</span>
+                    <div class="field-group-fields">
+                        <div class="form-group">
+                            <label for="dobDay">Day</label>
+                            <select id="dobDay" name="dobDay" x-model="formData.dobDay" required>
+                                <option value="" disabled>Day...</option>
+                                <template x-for="day in 31" :key="day">
+                                    <option :value="day" x-text="day"></option>
+                                </template>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dobMonth">Month</label>
+                            <select id="dobMonth" name="dobMonth" x-model="formData.dobMonth" required>
+                                <option value="" disabled>Month...</option>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="dobYear">Year</label>
+                            <input type="text" id="dobYear" name="dobYear" x-model="formData.dobYear" placeholder="YYYY" required maxlength="4">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="ethnicity">What is your ethnic group? *</label>
+                    <select id="ethnicity" name="ethnicity" x-model="formData.ethnicity" required>
+                        <option value="" disabled>Please select...</option>
+                        <option value="3">Asian or Asian British</option>
+                        <option value="4">Black, African, Caribbean or Black British</option>
+                        <option value="2">Mixed or Multiple ethnic groups</option>
+                        <option value="1">White English, Welsh, Scottish, Northern Irish or British</option>
+                        <option value="7">White Irish</option>
+                        <option value="6">White other</option>
+                        <option value="5">Other ethnic group</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="disability">Do you have any physical or mental health conditions or illnesses lasting or expected to last 12 months or more which limit your ability to carry out day-to-day activities? *</label>
+                    <select id="disability" name="disability" x-model="formData.disability" required>
+                        <option value="" disabled>Please select...</option>
+                        <option value="2">Yes, limited a little</option>
+                        <option value="1">Yes, limited a lot</option>
+                        <option value="3">No</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="nhsSatisfaction">All in all, how satisfied or dissatisfied would you say you are with the way in which the National Health Service runs nowadays? *</label>
+                    <select id="nhsSatisfaction" name="nhsSatisfaction" x-model="formData.nhsSatisfaction" required>
+                        <option value="" disabled>Please select...</option>
+                        <option value="1">Very satisfied</option>
+                        <option value="2">Quite satisfied</option>
+                        <option value="3">Neither satisfied nor dissatisfied</option>
+                        <option value="4">Quite dissatisfied</option>
+                        <option value="5">Very dissatisfied</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="education">What is your highest educational qualification? *</label>
+                    <select id="education" name="education" x-model="formData.education" required>
+                        <option value="" disabled>Please select...</option>
+                        <option value="1">No qualifications, or none yet</option>
+                        <option value="2">Level 1</option>
+                        <option value="3">Level 2</option>
+                        <option value="4">Level 3</option>
+                        <option value="5">Level 4 or above</option>
+                        <option value="6">Apprenticeship, or other qualification</option>
+                    </select>
+                    <div class="help-tooltip">
+                        Level 1: Up to 4 GCSEs. Level 2: 5+ GCSEs or 1 A level. Level 3: 2+ A levels. Level 4+: Degree or professional qualification.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Step 4: Consent & Submit -->
+            <div x-show="currentStep === 4" x-transition>
+                <h2>Consent & Submit</h2>
+
+                <p class="section-intro">Please review and confirm your consent to participate.</p>
+
+                <div class="data-notice">
+                    We will share your contact, attitudinal and demographic details with
+                    <a href="https://www.thinksinsight.com/" target="_blank">Thinks</a>, the organisation
+                    running this event. They will make a separate data agreement with you if selected.
+                    Your data will be kept strictly confidential and deleted within one year of
+                    event completion unless you opt in below.
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="dataConsent" x-model="formData.dataConsent" required>
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">I consent to the use of my data as described on this page *</span>
+                            <span class="help-text">Read our <a href="/privacy_policy" target="_blank">privacy policy</a> for more details</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="checkbox-group">
+                    <label>
+                        <input type="checkbox" name="futureContact" x-model="formData.futureContact">
+                        <div class="checkbox-content">
+                            <span class="checkbox-label">Please also inform me of similar events in the future</span>
+                            <span class="help-text">Do not delete my details after this event</span>
+                        </div>
+                    </label>
+                </div>
+
+                <div class="withdrawal-notice">
+                    At any time, you can withdraw your consent and ask us to delete your data
+                    by emailing participants@sortitionfoundation.org
+                </div>
+            </div>
+
+            <!-- Navigation Buttons -->
+            <div class="button-group">
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    x-show="currentStep > 1"
+                    @click="currentStep--">
+                    Previous
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-primary"
+                    x-show="currentStep < totalSteps"
+                    @click="currentStep++">
+                    Next
+                </button>
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                    x-show="currentStep === totalSteps">
+                    Register
+                </button>
+
+                <button
+                    type="button"
+                    class="btn btn-secondary"
+                    @click="clearDraft()">
+                    Clear Form
+                </button>
+            </div>
+        </form>
+    </div>
+</body>
+</html>

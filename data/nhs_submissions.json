@@ -1,0 +1,26 @@
+[
+  {
+    "canAttend": true,
+    "isEligible": true,
+    "firstName": "Gergely",
+    "lastName": "Gazda",
+    "email": "gergely@example.com",
+    "phone": "3333333",
+    "address1": "aaaaaa",
+    "address2": "",
+    "city": "cccccc",
+    "postCode": "111111",
+    "gender": "1",
+    "dobDay": "1",
+    "dobMonth": "4",
+    "dobYear": "1977",
+    "ethnicity": "6",
+    "disability": "3",
+    "nhsSatisfaction": "3",
+    "education": "4",
+    "dataConsent": true,
+    "futureContact": false,
+    "id": 1,
+    "timestamp": "2025-11-19T20:56:01.028965"
+  }
+]
