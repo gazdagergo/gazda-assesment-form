@@ -11,135 +11,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-    <style>
-        /* Typography */
-        body {
-            font-family: 'Open Sans', sans-serif;
-        }
-        h1, h2, h3, h4, h5, h6 {
-            font-family: 'Merriweather', serif;
-            color: #571845;
-        }
-
-        /* Top logo */
-        .top-logo {
-            text-align: left;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-        .top-logo img {
-            height: 80px;
-            width: auto;
-        }
-
-        /* Logo row */
-        .logo-row {
-            display: flex;
-            justify-content: flex-start;
-            align-items: center;
-            gap: 2rem;
-            margin: 1.5rem 0;
-            flex-wrap: wrap;
-            margin-bottom: 36px;
-        }
-        .logo-row img {
-            height: 60px;
-            width: auto;
-            object-fit: contain;
-            filter: grayscale(100%);
-        }
-
-        /* NHS form specific styles */
-        .intro-text {
-            background: rgba(255, 255, 255, 0.1);;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-        }
-        .intro-text p {
-            margin-bottom: 0.75rem;
-        }
-        .intro-text ul {
-            margin: 0.5rem 0;
-            padding-left: 1.5rem;
-        }
-        .intro-text li {
-            margin-bottom: 0.25rem;
-        }
-        .section-intro {
-            font-size: 0.95rem;
-            opacity: 0.9;
-            margin-bottom: 1.5rem;
-        }
-        .checkbox-group {
-            margin-bottom: 1.5rem;
-        }
-        .checkbox-group label {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-            cursor: pointer;
-        }
-        .checkbox-group input[type="checkbox"] {
-            width: auto;
-            margin-top: 0.25rem;
-            flex-shrink: 0;
-        }
-        .checkbox-group .checkbox-content {
-            flex: 1;
-        }
-        .checkbox-group .checkbox-label {
-            font-weight: 600;
-            display: block;
-            margin-bottom: 0.25rem;
-        }
-        .checkbox-group .help-text {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            font-style: italic;
-        }
-        .field-group {
-            margin-bottom: 1.5rem;
-        }
-        .field-group-label {
-            display: block;
-            font-weight: 500;
-        }
-        .field-group-fields {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 1rem;
-        }
-        .field-group-fields .form-group {
-            margin-bottom: 0;
-        }
-        .data-notice {
-            background: rgba(122, 122, 122, 0.1);
-            padding: 1rem;
-            border-radius: 8px;
-            margin-bottom: 1.5rem;
-            font-size: 0.9rem;
-        }
-        .data-notice a {
-            text-decoration: underline;
-        }
-        .withdrawal-notice {
-            font-size: 0.85rem;
-            opacity: 0.8;
-            margin-top: 1.5rem;
-            padding-top: 1rem;
-            border-top: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        .help-tooltip {
-            font-size: 0.8rem;
-            color: rgba(255, 255, 255, 0.7);
-            margin-top: 0.25rem;
-        }
-        @media (max-width: 600px) {
-            .field-group-fields {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
 </head>
 <body>
     <!-- Sortition Foundation Logo -->
@@ -169,30 +40,8 @@
             x-data="{
                 currentStep: 1,
                 totalSteps: 4,
-                formData: $persist({
-                    canAttend: false,
-                    isEligible: false,
-                    firstName: '',
-                    lastName: '',
-                    email: '',
-                    phone: '',
-                    address1: '',
-                    address2: '',
-                    city: '',
-                    postCode: '',
-                    gender: '',
-                    dobDay: '',
-                    dobMonth: '',
-                    dobYear: '',
-                    ethnicity: '',
-                    disability: '',
-                    nhsSatisfaction: '',
-                    education: '',
-                    dataConsent: false,
-                    futureContact: false
-                }).as('nhsConversationDraft'),
-                clearDraft() {
-                    this.formData = {
+                getDefaultFormData() {
+                    return {
                         canAttend: false,
                         isEligible: false,
                         firstName: '',
@@ -214,9 +63,18 @@
                         dataConsent: false,
                         futureContact: false
                     };
+                },
+                formData: $persist({}).as('nhsConversationDraft'),
+                init() {
+                    if (Object.keys(this.formData).length === 0) {
+                        this.formData = this.getDefaultFormData();
+                    }
+                },
+                clearDraft() {
+                    this.formData = this.getDefaultFormData();
                     this.currentStep = 1;
                 },
-               stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit']
+                stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit']
             }">
 
             <h2 x-text="stepNames[currentStep - 1]"></h2>

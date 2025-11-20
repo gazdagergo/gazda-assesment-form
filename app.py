@@ -1,13 +1,61 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
 import json
 import os
+import fcntl
 from datetime import datetime
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 app = Flask(__name__)
-app.secret_key = 'nhs-conversation-secret-key-change-in-production'
+app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
+app.config['DEBUG'] = os.getenv('DEBUG', 'True').lower() == 'true'
 
-# Data file path
-DATA_FILE = 'data/nhs_submissions.json'
+# Configuration
+DATA_FILE = os.getenv('DATA_FILE', 'data/nhs_submissions.json')
+PORT = int(os.getenv('PORT', 5000))
+
+# Form Choice Constants
+# These values correspond to the option values in the form templates
+GENDER_CHOICES = {
+    'MALE': '1',
+    'FEMALE': '2',
+    'NON_BINARY': '3'
+}
+
+ETHNICITY_CHOICES = {
+    'WHITE_BRITISH': '1',
+    'MIXED': '2',
+    'ASIAN': '3',
+    'BLACK': '4',
+    'OTHER': '5',
+    'WHITE_OTHER': '6',
+    'WHITE_IRISH': '7'
+}
+
+EDUCATION_LEVELS = {
+    'NO_QUALIFICATIONS': '1',
+    'LEVEL_1': '2',  # Up to 4 GCSEs
+    'LEVEL_2': '3',  # 5+ GCSEs or 1 A level
+    'LEVEL_3': '4',  # 2+ A levels
+    'LEVEL_4_PLUS': '5',  # Degree or professional qualification
+    'APPRENTICESHIP': '6'
+}
+
+DISABILITY_STATUS = {
+    'LIMITED_A_LOT': '1',
+    'LIMITED_A_LITTLE': '2',
+    'NO': '3'
+}
+
+NHS_SATISFACTION = {
+    'VERY_SATISFIED': '1',
+    'QUITE_SATISFIED': '2',
+    'NEITHER': '3',
+    'QUITE_DISSATISFIED': '4',
+    'VERY_DISSATISFIED': '5'
+}
 
 
 def load_submissions():
@@ -19,22 +67,115 @@ def load_submissions():
 
 
 def save_submission(data):
-    """Save a new submission to the JSON file."""
-    submissions = load_submissions()
-
-    # Generate ID and timestamp
-    data['id'] = len(submissions) + 1
-    data['timestamp'] = datetime.now().isoformat()
-
-    submissions.append(data)
-
+    """
+    Save a new submission to the JSON file with file locking.
+    Uses fcntl for Unix/Linux/Mac systems to prevent race conditions.
+    """
     # Ensure data directory exists
     os.makedirs(os.path.dirname(DATA_FILE), exist_ok=True)
 
-    with open(DATA_FILE, 'w') as f:
-        json.dump(submissions, f, indent=2)
+    # Open file in read-write mode, create if doesn't exist
+    with open(DATA_FILE, 'a+') as f:
+        # Acquire exclusive lock
+        fcntl.flock(f.fileno(), fcntl.LOCK_EX)
 
-    return data['id']
+        try:
+            # Move to beginning and read existing data
+            f.seek(0)
+            content = f.read()
+
+            if content:
+                submissions = json.loads(content)
+            else:
+                submissions = []
+
+            # Generate ID and timestamp
+            data['id'] = len(submissions) + 1
+            data['timestamp'] = datetime.now().isoformat()
+
+            submissions.append(data)
+
+            # Write updated data
+            f.seek(0)
+            f.truncate()
+            json.dump(submissions, f, indent=2)
+
+            return data['id']
+        finally:
+            # Release lock
+            fcntl.flock(f.fileno(), fcntl.LOCK_UN)
+
+
+def validate_eligibility(form_data):
+    """Validate Step 1: Eligibility fields."""
+    errors = []
+    if not form_data['canAttend']:
+        errors.append('You must confirm you can attend all dates.')
+    if not form_data['isEligible']:
+        errors.append('You must confirm you are eligible to attend.')
+    return errors
+
+
+def validate_contact_details(form_data):
+    """Validate Step 2: Contact Details."""
+    errors = []
+    if not form_data['firstName']:
+        errors.append('First name is required.')
+    if not form_data['lastName']:
+        errors.append('Last name is required.')
+    if not form_data['email'] or '@' not in form_data['email']:
+        errors.append('A valid email address is required.')
+    if not form_data['phone']:
+        errors.append('Phone number is required.')
+    if not form_data['address1']:
+        errors.append('Address line 1 is required.')
+    if not form_data['city']:
+        errors.append('City is required.')
+    if not form_data['postCode']:
+        errors.append('Post code is required.')
+    return errors
+
+
+def validate_about_you(form_data):
+    """Validate Step 3: About You fields."""
+    errors = []
+    if not form_data['gender']:
+        errors.append('Gender is required.')
+    if not form_data['dobDay']:
+        errors.append('Day of birth is required.')
+    if not form_data['dobMonth']:
+        errors.append('Month of birth is required.')
+    if not form_data['dobYear']:
+        errors.append('Year of birth is required.')
+    elif not form_data['dobYear'].isdigit() or len(form_data['dobYear']) != 4:
+        errors.append('Please enter a valid 4-digit year.')
+    if not form_data['ethnicity']:
+        errors.append('Ethnic group is required.')
+    if not form_data['disability']:
+        errors.append('Disability status is required.')
+    if not form_data['nhsSatisfaction']:
+        errors.append('NHS satisfaction response is required.')
+    if not form_data['education']:
+        errors.append('Educational qualification is required.')
+    return errors
+
+
+def validate_consent(form_data):
+    """Validate Step 4: Consent."""
+    errors = []
+    if not form_data['dataConsent']:
+        errors.append('You must consent to the use of your data.')
+    return errors
+
+
+def validate_form(form_data):
+    """Main validation orchestrator."""
+    errors = []
+    errors.extend(validate_eligibility(form_data))
+    errors.extend(validate_contact_details(form_data))
+    errors.extend(validate_about_you(form_data))
+    errors.extend(validate_consent(form_data))
+    return errors
 
 
 @app.route('/')
@@ -46,8 +187,6 @@ def index():
 @app.route('/submit', methods=['POST'])
 def submit():
     """Handle form submission with validation."""
-    errors = []
-
     # Get form data
     form_data = {
         # Eligibility
@@ -76,52 +215,8 @@ def submit():
         'futureContact': request.form.get('futureContact') == 'on',
     }
 
-    # Validation
-    # Step 1: Eligibility
-    if not form_data['canAttend']:
-        errors.append('You must confirm you can attend all dates.')
-    if not form_data['isEligible']:
-        errors.append('You must confirm you are eligible to attend.')
-
-    # Step 2: Contact Details
-    if not form_data['firstName']:
-        errors.append('First name is required.')
-    if not form_data['lastName']:
-        errors.append('Last name is required.')
-    if not form_data['email'] or '@' not in form_data['email']:
-        errors.append('A valid email address is required.')
-    if not form_data['phone']:
-        errors.append('Phone number is required.')
-    if not form_data['address1']:
-        errors.append('Address line 1 is required.')
-    if not form_data['city']:
-        errors.append('City is required.')
-    if not form_data['postCode']:
-        errors.append('Post code is required.')
-
-    # Step 3: About You
-    if not form_data['gender']:
-        errors.append('Gender is required.')
-    if not form_data['dobDay']:
-        errors.append('Day of birth is required.')
-    if not form_data['dobMonth']:
-        errors.append('Month of birth is required.')
-    if not form_data['dobYear']:
-        errors.append('Year of birth is required.')
-    elif not form_data['dobYear'].isdigit() or len(form_data['dobYear']) != 4:
-        errors.append('Please enter a valid 4-digit year.')
-    if not form_data['ethnicity']:
-        errors.append('Ethnic group is required.')
-    if not form_data['disability']:
-        errors.append('Disability status is required.')
-    if not form_data['nhsSatisfaction']:
-        errors.append('NHS satisfaction response is required.')
-    if not form_data['education']:
-        errors.append('Educational qualification is required.')
-
-    # Step 4: Consent
-    if not form_data['dataConsent']:
-        errors.append('You must consent to the use of your data.')
+    # Validate form data
+    errors = validate_form(form_data)
 
     # If validation errors, flash them and redirect back
     if errors:
@@ -142,4 +237,4 @@ def success():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    app.run(debug=app.config['DEBUG'], port=PORT)

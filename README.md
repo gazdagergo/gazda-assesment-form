@@ -53,6 +53,13 @@ venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
+5. (Optional) Create a `.env` file for configuration:
+```bash
+cp .env.example .env
+```
+
+Then edit `.env` to customize your settings (secret key, port, etc.).
+
 ## Running the Application
 
 1. Make sure your virtual environment is activated
@@ -147,26 +154,33 @@ Each submission is stored as a JSON object with the following structure:
 
 ## Configuration
 
-### Changing the Secret Key
+The application can be configured using environment variables. Create a `.env` file in the project root (see `.env.example` for reference):
 
-In production, change the secret key in `app.py`:
-
-```python
-app.secret_key = 'your-secret-key-change-this-in-production'
-```
-
-Generate a secure secret key:
 ```bash
-python -c 'import secrets; print(secrets.token_hex(16))'
+# Flask Configuration
+SECRET_KEY=your-secret-key-here
+DEBUG=True
+
+# Application Configuration
+PORT=5000
+DATA_FILE=data/nhs_submissions.json
 ```
 
-### Changing the Port
+### Environment Variables
 
-To run on a different port, modify the last line in `app.py`:
+- `SECRET_KEY`: Flask secret key for session management (required for production)
+- `DEBUG`: Enable/disable debug mode (True/False)
+- `PORT`: Port number for the application (default: 5000)
+- `DATA_FILE`: Path to the JSON file for storing submissions
 
-```python
-app.run(debug=True, port=5000)  # Change port number here
+### Generating a Secure Secret Key
+
+For production, generate a secure secret key:
+```bash
+python -c 'import secrets; print(secrets.token_hex(32))'
 ```
+
+Add this to your `.env` file as `SECRET_KEY=<generated-key>`
 
 ### Customizing Form Fields
 
