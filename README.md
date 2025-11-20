@@ -1,14 +1,14 @@
-# Job Assessment Form - Flask Application
+# NHS Conversation Registration Form - Flask Application
 
-A simple Flask-based web application for job assessment forms with JSON file storage.
+A Flask-based web application for NHS conversation event registration with JSON file storage.
 
 ## Features
 
-- Clean, responsive form interface
-- Server-side form validation
+- Multi-step registration form with progress tracking
+- Comprehensive form validation
 - JSON-based file storage (no database required)
 - Success confirmation page
-- Modern gradient UI with basic styling
+- Modern, responsive UI with NHS-inspired styling
 - Flash messages for validation errors
 
 ## Project Structure
@@ -18,9 +18,9 @@ gazda-assesment-form/
 ├── app.py                  # Main Flask application
 ├── requirements.txt        # Python dependencies
 ├── data/
-│   └── submissions.json    # JSON file storing form submissions (created on first submission)
+│   └── nhs_submissions.json # JSON file storing form submissions (created on first submission)
 ├── templates/
-│   ├── form.html          # Main form template
+│   ├── form.html          # NHS registration form template
 │   └── success.html       # Success confirmation page
 └── static/
     └── css/
@@ -69,33 +69,49 @@ http://localhost:5000
 
 ## Usage
 
-### Submitting a Form
+### Submitting a Registration
 
-1. Fill out the form fields:
-   - Full Name (required)
+The registration form consists of four steps:
+
+1. **Eligibility**
+   - Confirm ability to attend all event dates
+   - Confirm eligibility to attend
+
+2. **Contact Details**
+   - First Name (required)
+   - Last Name (required)
    - Email Address (required)
-   - Phone Number (optional)
-   - Position Applied For (required)
-   - Years of Experience (required)
-   - Key Skills & Technologies (optional)
+   - Phone Number (required)
+   - Address Line 1 (required)
+   - Address Line 2 (optional)
+   - City (required)
+   - Post Code (required)
 
-2. Click "Submit Application"
+3. **About You**
+   - Gender (required)
+   - Date of Birth (required)
+   - Ethnic Group (required)
+   - Disability Status (required)
+   - NHS Satisfaction (required)
+   - Educational Qualification (required)
 
-3. If validation passes, you'll be redirected to a success page
+4. **Consent & Submit**
+   - Data Usage Consent (required)
+   - Future Contact Opt-in (optional)
 
-4. Form data is saved to `data/submissions.json`
+Click "Submit Registration" to complete. If validation passes, you'll be redirected to a success page. Form data is saved to `data/nhs_submissions.json`.
 
 ### Viewing Submissions
 
-Submissions are stored in `data/submissions.json`. You can view them by opening the file:
+Submissions are stored in `data/nhs_submissions.json`. You can view them by opening the file:
 
 ```bash
-cat data/submissions.json
+cat data/nhs_submissions.json
 ```
 
 Or in a more readable format:
 ```bash
-python -m json.tool data/submissions.json
+python -m json.tool data/nhs_submissions.json
 ```
 
 ## Data Format
@@ -105,13 +121,27 @@ Each submission is stored as a JSON object with the following structure:
 ```json
 {
   "id": 1,
-  "timestamp": "2025-11-18T10:30:00.123456",
-  "name": "John Doe",
+  "timestamp": "2025-11-20T10:30:00.123456",
+  "canAttend": true,
+  "isEligible": true,
+  "firstName": "John",
+  "lastName": "Doe",
   "email": "john@example.com",
-  "phone": "+36 XX XXX XXXX",
-  "position": "fullstack-developer",
-  "experience": "3-5",
-  "skills": "Python, Flask, JavaScript, React"
+  "phone": "+44 20 1234 5678",
+  "address1": "123 Main Street",
+  "address2": "Flat 4",
+  "city": "London",
+  "postCode": "SW1A 1AA",
+  "gender": "male",
+  "dobDay": "15",
+  "dobMonth": "06",
+  "dobYear": "1990",
+  "ethnicity": "white-british",
+  "disability": "no",
+  "nhsSatisfaction": "satisfied",
+  "education": "degree",
+  "dataConsent": true,
+  "futureContact": true
 }
 ```
 
