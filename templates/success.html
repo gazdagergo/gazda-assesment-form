@@ -1,12 +1,12 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration Complete - NHS National Conversation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-</head>
-<body>
+{% extends "base.html" %}
+
+{% block title %}Registration Complete - NHS National Conversation{% endblock %}
+
+{% block head %}
+    <script src="{{ url_for('static', filename='js/form.js') }}"></script>
+{% endblock %}
+
+{% block body %}
     <div class="container success-container">
         <div class="success-icon">✓</div>
         <h1>Registration Complete!</h1>
@@ -36,7 +36,6 @@
 
     <script>
         // Clear the persisted form data on successful submission
-        localStorage.removeItem('_x_nhsConversationDraft');
+        clearFormDraft();
     </script>
-</body>
-</html>
+{% endblock %}

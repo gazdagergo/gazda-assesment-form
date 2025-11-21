@@ -1,18 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>National conversation on the future of the NHS</title>
-    <link rel="icon" type="image/x-icon" href="{{ url_for('static', filename='images/SF-favicon-new.ico') }}">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@400;700&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+{% extends "base.html" %}
+
+{% block title %}National conversation on the future of the NHS{% endblock %}
+
+{% block head %}
     <script defer src="https://cdn.jsdelivr.net/npm/@alpinejs/persist@3.x.x/dist/cdn.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
+    <script src="{{ url_for('static', filename='js/form.js') }}"></script>
+{% endblock %}
+
+{% block body %}
     <!-- Sortition Foundation Logo -->
     <div class="top-logo">
         <img src="{{ url_for('static', filename='images/logosortition.svg') }}" alt="Sortition Foundation">
@@ -38,8 +34,32 @@
             action="/submit"
             novalidate
             x-data="{
+                csrfToken: '{{ csrf_token() }}',
                 currentStep: 1,
                 totalSteps: 4,
+                stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit'],
+                formData: $persist({
+                    canAttend: false,
+                    isEligible: false,
+                    firstName: '',
+                    lastName: '',
+                    email: '',
+                    phone: '',
+                    address1: '',
+                    address2: '',
+                    city: '',
+                    postCode: '',
+                    gender: '',
+                    dobDay: '',
+                    dobMonth: '',
+                    dobYear: '',
+                    ethnicity: '',
+                    disability: '',
+                    nhsSatisfaction: '',
+                    education: '',
+                    dataConsent: false,
+                    futureContact: false
+                }).as('nhsConversationDraft'),
                 getDefaultFormData() {
                     return {
                         canAttend: false,
@@ -64,18 +84,13 @@
                         futureContact: false
                     };
                 },
-                formData: $persist({}).as('nhsConversationDraft'),
-                init() {
-                    if (Object.keys(this.formData).length === 0) {
-                        this.formData = this.getDefaultFormData();
-                    }
-                },
                 clearDraft() {
                     this.formData = this.getDefaultFormData();
                     this.currentStep = 1;
-                },
-                stepNames: ['Welcome & Eligibility', 'Contact Details', 'About You', 'Consent & Submit']
+                }
             }">
+
+            <input type="hidden" name="csrf_token" :value="csrfToken">
 
             <h2 x-text="stepNames[currentStep - 1]"></h2>
 
@@ -373,5 +388,4 @@
             </div>
         </form>
     </div>
-</body>
-</html>
+{% endblock %}

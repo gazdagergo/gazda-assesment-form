@@ -1,4 +1,5 @@
 from flask import Flask, render_template, request, redirect, url_for, flash
+from flask_wtf.csrf import CSRFProtect
 import json
 import os
 import fcntl
@@ -11,6 +12,9 @@ load_dotenv()
 app = Flask(__name__)
 app.secret_key = os.getenv('SECRET_KEY', 'dev-secret-key-change-in-production')
 app.config['DEBUG'] = os.getenv('DEBUG', 'True').lower() == 'true'
+
+# Enable CSRF protection
+csrf = CSRFProtect(app)
 
 # Configuration
 DATA_FILE = os.getenv('DATA_FILE', 'data/nhs_submissions.json')
