@@ -87,12 +87,38 @@
                 clearDraft() {
                     this.formData = this.getDefaultFormData();
                     this.currentStep = 1;
+                },
+                manageFocus() {
+                    // Wait for Alpine.js to update DOM
+                    this.$nextTick(() => {
+                        // Focus on the step heading
+                        const heading = this.$refs.stepHeading;
+                        if (heading) {
+                            heading.focus();
+                            heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                },
+                nextStep() {
+                    if (this.currentStep &lt; this.totalSteps) {
+                        this.currentStep++;
+                        this.manageFocus();
+                    }
+                },
+                previousStep() {
+                    if (this.currentStep &gt; 1) {
+                        this.currentStep--;
+                        this.manageFocus();
+                    }
                 }
             }">
 
             <input type="hidden" name="csrf_token" :value="csrfToken">
 
-            <h2 x-text="stepNames[currentStep - 1]"></h2>
+            <h2 x-text="stepNames[currentStep - 1]"
+                x-ref="stepHeading"
+                tabindex="-1"
+                class="step-heading"></h2>
 
             <!-- Progress Indicator -->
             <div class="progress-container">
@@ -106,7 +132,7 @@
 
             <!-- Step 1: Welcome & Eligibility -->
             <div x-show="currentStep === 1"
-                 :inert="currentStep !== 1"
+                 x-bind:inert="currentStep !== 1 ? true : null"
                  x-transition>
                 <div class="intro-text">
                     <p>Thank you for your interest in taking part in a <strong>national conversation on the future of the NHS</strong>.</p>
@@ -171,7 +197,7 @@
 
             <!-- Step 2: Contact Details -->
             <div x-show="currentStep === 2"
-                 :inert="currentStep !== 2"
+                 x-bind:inert="currentStep !== 2 ? true : null"
                  x-transition>
                 <p class="section-intro">We use these details to communicate with you about this event.</p>
 
@@ -218,7 +244,7 @@
 
             <!-- Step 3: About You -->
             <div x-show="currentStep === 3"
-                 :inert="currentStep !== 3"
+                 x-bind:inert="currentStep !== 3 ? true : null"
                  x-transition>
                 <p class="section-intro">We use these details in our democratic lottery process to select a group of participants that broadly represents the entire community.</p>
 
@@ -324,7 +350,7 @@
 
             <!-- Step 4: Consent & Submit -->
             <div x-show="currentStep === 4"
-                 :inert="currentStep !== 4"
+                 x-bind:inert="currentStep !== 4 ? true : null"
                  x-transition>
                 <p class="section-intro">Please review and confirm your consent to participate.</p>
 
@@ -368,8 +394,8 @@
                     type="button"
                     class="btn btn-secondary"
                     x-show="currentStep > 1"
-                    :inert="currentStep <= 1"
-                    @click="currentStep--">
+                    x-bind:inert="currentStep <= 1 ? true : null"
+                    @click="previousStep()">
                     Previous
                 </button>
 
@@ -377,8 +403,8 @@
                     type="button"
                     class="btn btn-primary"
                     x-show="currentStep < totalSteps"
-                    :inert="currentStep >= totalSteps"
-                    @click="currentStep++">
+                    x-bind:inert="currentStep >= totalSteps ? true : null"
+                    @click="nextStep()">
                     Next
                 </button>
 
@@ -386,7 +412,7 @@
                     type="submit"
                     class="btn btn-primary"
                     x-show="currentStep === totalSteps"
-                    :inert="currentStep !== totalSteps">
+                    x-bind:inert="currentStep !== totalSteps ? true : null">
                     Register
                 </button>
 

@@ -261,6 +261,17 @@ h1, h2, h3, h4, h5, h6 {
     color: #571845;
 }
 
+/* Step heading - focusable for accessibility */
+.step-heading {
+    outline: none;
+}
+
+.step-heading:focus {
+    outline: 3px solid #005fcc;
+    outline-offset: 4px;
+    border-radius: 4px;
+}
+
 /* Top logo */
 .top-logo {
     text-align: left;
