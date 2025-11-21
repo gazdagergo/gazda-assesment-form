@@ -105,7 +105,9 @@
             </div>
 
             <!-- Step 1: Welcome & Eligibility -->
-            <div x-show="currentStep === 1" x-transition>
+            <div x-show="currentStep === 1"
+                 :inert="currentStep !== 1"
+                 x-transition>
                 <div class="intro-text">
                     <p>Thank you for your interest in taking part in a <strong>national conversation on the future of the NHS</strong>.</p>
 
@@ -168,7 +170,9 @@
             </div>
 
             <!-- Step 2: Contact Details -->
-            <div x-show="currentStep === 2" x-transition>
+            <div x-show="currentStep === 2"
+                 :inert="currentStep !== 2"
+                 x-transition>
                 <p class="section-intro">We use these details to communicate with you about this event.</p>
 
                 <div class="form-group">
@@ -213,7 +217,9 @@
             </div>
 
             <!-- Step 3: About You -->
-            <div x-show="currentStep === 3" x-transition>
+            <div x-show="currentStep === 3"
+                 :inert="currentStep !== 3"
+                 x-transition>
                 <p class="section-intro">We use these details in our democratic lottery process to select a group of participants that broadly represents the entire community.</p>
 
                 <div class="form-group">
@@ -317,7 +323,9 @@
             </div>
 
             <!-- Step 4: Consent & Submit -->
-            <div x-show="currentStep === 4" x-transition>
+            <div x-show="currentStep === 4"
+                 :inert="currentStep !== 4"
+                 x-transition>
                 <p class="section-intro">Please review and confirm your consent to participate.</p>
 
                 <div class="data-notice">
@@ -360,6 +368,7 @@
                     type="button"
                     class="btn btn-secondary"
                     x-show="currentStep > 1"
+                    :inert="currentStep <= 1"
                     @click="currentStep--">
                     Previous
                 </button>
@@ -368,6 +377,7 @@
                     type="button"
                     class="btn btn-primary"
                     x-show="currentStep < totalSteps"
+                    :inert="currentStep >= totalSteps"
                     @click="currentStep++">
                     Next
                 </button>
@@ -375,7 +385,8 @@
                 <button
                     type="submit"
                     class="btn btn-primary"
-                    x-show="currentStep === totalSteps">
+                    x-show="currentStep === totalSteps"
+                    :inert="currentStep !== totalSteps">
                     Register
                 </button>
 
